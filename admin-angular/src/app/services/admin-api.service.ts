@@ -111,4 +111,8 @@ export class AdminApiService {
   getNotifications(): Observable<any> {
     return this.http.get(`${this.baseUrl}/notifications`, { headers: this.getAuthHeaders() }).pipe(this.handleAuthError());
   }
+
+  markNotificationRead(id: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/notifications/${id}/read`, {}, { headers: this.getAuthHeaders() }).pipe(this.handleAuthError());
+  }
 }

@@ -29,7 +29,7 @@ import { AdminApiService } from './services/admin-api.service';
         <div class="flex items-center gap-3 text-xs">
           <!-- Real-time Admin Notification Bell -->
           <div class="relative">
-            <button (click)="isNotifOpen = !isNotifOpen" class="relative p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 border border-slate-700 transition-colors">
+            <button (click)="toggleNotifications()" class="relative p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 border border-slate-700 transition-colors">
               <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
               <span *ngIf="unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center animate-pulse">
                 {{ unreadCount }}
@@ -73,12 +73,17 @@ import { AdminApiService } from './services/admin-api.service';
       </header>
 
       <!-- Fine Paid Toast Notification Overlay -->
-      <div *ngIf="toastMessage" class="fixed bottom-6 right-6 z-50 p-4 bg-emerald-950 border border-emerald-500/50 text-emerald-200 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce">
-        <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">₹</div>
-        <div>
-          <div class="text-xs font-bold text-white">Fine Payment Alert</div>
-          <div class="text-[11px] text-emerald-300">{{ toastMessage }}</div>
+      <div *ngIf="toastMessage" class="fixed bottom-6 right-6 z-50 p-4 bg-emerald-950 border border-emerald-500/50 text-emerald-200 rounded-2xl shadow-2xl flex items-center justify-between gap-3 transition-all">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">₹</div>
+          <div>
+            <div class="text-xs font-bold text-white">Fine Payment Alert</div>
+            <div class="text-[11px] text-emerald-300">{{ toastMessage }}</div>
+          </div>
         </div>
+        <button (click)="toastMessage = ''" class="p-1 hover:bg-emerald-900/50 text-emerald-400 hover:text-white rounded-lg cursor-pointer ml-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
 
       <!-- Top-Level Mobile Slide-Over Navigation Drawer (Floating over ALL content) -->
@@ -226,11 +231,28 @@ export class AppComponent implements OnInit {
     });
   }
 
+  private toastTimer: any;
+
+  toggleNotifications() {
+    this.isNotifOpen = !this.isNotifOpen;
+    this.toastMessage = ''; // Instantly clear toast banner on click
+    if (this.isNotifOpen && this.notifications.length > 0) {
+      this.notifications.forEach((n) => {
+        if (!n.isRead && n._id) {
+          this.api.markNotificationRead(n._id).subscribe();
+          n.isRead = true;
+        }
+      });
+      this.unreadCount = 0;
+    }
+  }
+
   showToast(msg: string) {
     this.toastMessage = msg;
-    setTimeout(() => {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
       this.toastMessage = '';
-    }, 5000);
+    }, 4000);
   }
 
   isLoggedIn(): boolean {

@@ -16,6 +16,9 @@ export class AdminApiService {
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:5000/api/v1';
       }
+      if (window.location.hostname.includes('vercel.app')) {
+        return 'https://slms-backend.onrender.com/api/v1';
+      }
       return `${window.location.origin}/api/v1`;
     }
     return 'http://localhost:5000/api/v1';

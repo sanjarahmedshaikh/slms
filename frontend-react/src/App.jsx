@@ -23,8 +23,9 @@ function ProtectedLayout() {
 
   const userRole = user.role || '';
   if (userRole === 'super_admin' || userRole === 'admin' || userRole === 'librarian' || userRole.includes('admin')) {
-    window.location.href = import.meta.env.VITE_ADMIN_URL || '/admin/';
-    return null;
+    localStorage.removeItem('slms_token');
+    localStorage.removeItem('slms_user');
+    return <Navigate to="/login" replace />;
   }
 
   return (

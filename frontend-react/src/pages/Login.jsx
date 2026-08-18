@@ -19,18 +19,27 @@ export default function Login() {
     let cleanEmail = (email || '').trim().toLowerCase();
     if (cleanEmail === 'student') cleanEmail = 'student@slms.com';
     if (cleanEmail === 'faculty') cleanEmail = 'faculty@slms.com';
+    if (cleanEmail === 'admin') cleanEmail = 'admin@slms.com';
+    if (cleanEmail === 'librarian') cleanEmail = 'librarian@slms.com';
+
+    if (cleanEmail === 'admin@slms.com' || cleanEmail === 'librarian@slms.com') {
+      setLoading(false);
+      setErrorMessage('Admin and Librarian credentials are not allowed in the Student Portal.');
+      return;
+    }
 
     const res = await login(cleanEmail, password);
     setLoading(false);
 
     if (res.success) {
       const userRole = res.user?.role || '';
-      const adminTargetUrl = import.meta.env.VITE_ADMIN_URL || '/admin/';
       if (userRole === 'super_admin' || userRole === 'admin' || userRole === 'librarian' || userRole.includes('admin')) {
-        window.location.href = adminTargetUrl;
-      } else {
-        navigate('/');
+        localStorage.removeItem('slms_token');
+        localStorage.removeItem('slms_user');
+        setErrorMessage('Admin and Librarian credentials are not allowed in the Student Portal.');
+        return;
       }
+      navigate('/');
     } else {
       setErrorMessage(res.message || 'Invalid email or password. Please check your credentials.');
     }

@@ -24,7 +24,7 @@ export default function Login() {
 
     if (cleanEmail === 'admin@slms.com' || cleanEmail === 'librarian@slms.com') {
       setLoading(false);
-      setErrorMessage('Admin and Librarian credentials are not allowed in the Student Portal.');
+      setErrorMessage('Invalid email or password. Please check your credentials.');
       return;
     }
 
@@ -36,7 +36,7 @@ export default function Login() {
       if (userRole === 'super_admin' || userRole === 'admin' || userRole === 'librarian' || userRole.includes('admin')) {
         localStorage.removeItem('slms_token');
         localStorage.removeItem('slms_user');
-        setErrorMessage('Admin and Librarian credentials are not allowed in the Student Portal.');
+        setErrorMessage('Invalid email or password. Please check your credentials.');
         return;
       }
       navigate('/');

@@ -1,0 +1,23 @@
+# Angular build & output
+.angular/
+dist/
+/tmp
+/out-tsc
+/bazel-out
+
+# Node dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.soff
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.production

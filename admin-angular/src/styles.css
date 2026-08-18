@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-slate-950 text-slate-100 font-sans antialiased;
+    overflow-x: hidden;
+  }
+}
+
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 rounded-full;
+}
+
+/* ApexCharts Dark Theme Menu & Tooltip Fixes */
+.apexcharts-menu {
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  padding: 6px !important;
+  color: #f8fafc !important;
+}
+
+.apexcharts-menu-item {
+  color: #e2e8f0 !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 8px 12px !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.apexcharts-menu-item:hover {
+  background: #334155 !important;
+  color: #ffffff !important;
+}
+
+.apexcharts-menu-icon svg {
+  fill: #94a3b8 !important;
+  transition: fill 0.15s ease !important;
+}
+
+.apexcharts-menu-icon:hover svg {
+  fill: #f8fafc !important;
+}
+
+.apexcharts-theme-dark .apexcharts-menu {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.apexcharts-tooltip {
+  background: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.apexcharts-tooltip-title {
+  background: #1e293b !important;
+  border-bottom: 1px solid #334155 !important;
+  color: #e2e8f0 !important;
+  font-weight: 700 !important;
+}
+
+/* ApexCharts Donut Labels & Legend Styling Fixes */
+.apexcharts-datalabel,
+.apexcharts-datalabel-label,
+.apexcharts-datalabel-value,
+.apexcharts-datalabels text,
+.apexcharts-text tspan,
+.apexcharts-text text {
+  text-shadow: none !important;
+  filter: none !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+.apexcharts-legend-text {
+  color: #e2e8f0 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.apexcharts-pie-label,
+.apexcharts-datalabel-value {
+  fill: #ffffff !important;
+  font-weight: 700 !important;
+}

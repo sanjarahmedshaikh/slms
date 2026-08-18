@@ -1,0 +1,47 @@
+name: SLMS Continuous Integration & Production Audit
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  audit-and-test:
+    name: Build & Test Applications
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Root & Component Dependencies
+        run: |
+          npm install
+          cd backend && npm install
+          cd ../frontend-react && npm install
+          cd ../admin-angular && npm install --legacy-peer-deps
+
+      - name: Validate React Frontend Build
+        run: |
+          cd frontend-react
+          npm run build
+
+      - name: Validate Angular Admin Build
+        run: |
+          cd admin-angular
+          npm run build
+
+      - name: Execute Test Suite Assertions
+        run: |
+          node run-all-tests.js

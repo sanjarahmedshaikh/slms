@@ -1,0 +1,12 @@
+version: "2"
+authtoken: 3A1HyLzOKOOCY08oz6b1uQ0Xirn_4AHJEX1TsdrRY5RNQkeeV
+tunnels:
+  backend:
+    proto: http
+    addr: 5000
+  frontend-react:
+    proto: http
+    addr: 5173
+  admin-angular:
+    proto: http
+    addr: 4200

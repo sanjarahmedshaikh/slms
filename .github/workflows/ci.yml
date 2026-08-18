@@ -24,6 +24,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend-react/package-lock.json
+            admin-angular/package-lock.json
 
       - name: Install Root & Component Dependencies
         run: |

@@ -30,9 +30,12 @@ export default function MyFines() {
 
   const handlePay = async () => {
     try {
-      if (selectedFine?._id) {
-        await api.patch(`/fines/${selectedFine._id}/pay`, { status: 'paid', paymentMethod: 'online' });
-      }
+      const fineId = selectedFine?._id || 'demo-fine';
+      await api.patch(`/fines/${fineId}/pay`, {
+        status: 'paid',
+        paymentMethod: 'online',
+        amount: selectedFine?.amount || 5.0
+      });
     } catch (err) {
       console.error('Fine payment request warning:', err);
     }

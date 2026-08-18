@@ -103,4 +103,8 @@ export class AdminApiService {
   cancelReservation(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/reservations/${id}`, { headers: this.getAuthHeaders() }).pipe(this.handleAuthError());
   }
+
+  getNotifications(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/notifications`, { headers: this.getAuthHeaders() }).pipe(this.handleAuthError());
+  }
 }

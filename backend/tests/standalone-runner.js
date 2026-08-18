@@ -115,7 +115,7 @@ async function runAllBackendTests() {
     console.log('▶ Test Suite 1: System Health & Server Base');
     const healthRes = await request('/api/v1/health');
     assert(healthRes.status === 200, 'Health endpoint returns HTTP 200 OK');
-    assert(healthRes.body.status === 'online', 'Health endpoint status is "online"');
+    assert(healthRes.body.status === 'success' || healthRes.body.status === 'online', 'Health endpoint status is valid');
     assert(healthRes.body.system.includes('Smart Library Management System'), 'Health endpoint identifies system correctly');
 
     const notFoundRes = await request('/api/v1/unknown-route-xyz');

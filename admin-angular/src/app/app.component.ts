@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { AdminApiService } from './services/admin-api.service';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +27,38 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
         </div>
 
         <div class="flex items-center gap-3 text-xs">
+          <!-- Real-time Admin Notification Bell -->
+          <div class="relative">
+            <button (click)="isNotifOpen = !isNotifOpen" class="relative p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 border border-slate-700 transition-colors">
+              <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span *ngIf="unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center animate-pulse">
+                {{ unreadCount }}
+              </span>
+            </button>
+
+            <!-- Notifications Dropdown -->
+            <div *ngIf="isNotifOpen" class="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-4 space-y-3">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <span class="font-bold text-xs text-white">Admin Alerts & Fine Payments</span>
+                <span class="text-[10px] text-cyan-400 font-semibold cursor-pointer" (click)="loadNotifications()">Refresh</span>
+              </div>
+
+              <div *ngIf="notifications.length === 0" class="text-center py-4 text-[11px] text-slate-500">
+                No recent fine payment alerts.
+              </div>
+
+              <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                <div *ngFor="let n of notifications" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-[11px] text-emerald-400">{{ n.title }}</span>
+                    <span class="text-[9px] text-slate-500">{{ n.createdAt | date:'shortTime' }}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-300">{{ n.message }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs ring-2 ring-cyan-500/30">
               AD
@@ -38,6 +71,15 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
           </button>
         </div>
       </header>
+
+      <!-- Fine Paid Toast Notification Overlay -->
+      <div *ngIf="toastMessage" class="fixed bottom-6 right-6 z-50 p-4 bg-emerald-950 border border-emerald-500/50 text-emerald-200 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce">
+        <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">₹</div>
+        <div>
+          <div class="text-xs font-bold text-white">Fine Payment Alert</div>
+          <div class="text-[11px] text-emerald-300">{{ toastMessage }}</div>
+        </div>
+      </div>
 
       <!-- Top-Level Mobile Slide-Over Navigation Drawer (Floating over ALL content) -->
       <div *ngIf="isLoggedIn() && isMobileMenuOpen" class="fixed inset-0 z-[99999] md:hidden flex">
@@ -143,10 +185,53 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
     </div>
   `
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   isMobileMenuOpen = false;
+  isNotifOpen = false;
+  notifications: any[] = [];
+  unreadCount = 0;
+  toastMessage = '';
+  private pollTimer: any;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private api: AdminApiService) {}
+
+  ngOnInit() {
+    if (this.isLoggedIn()) {
+      this.loadNotifications();
+      this.pollTimer = setInterval(() => {
+        this.loadNotifications();
+      }, 15000);
+    }
+  }
+
+  loadNotifications() {
+    this.api.getNotifications().subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          const list = res.data.notifications || [];
+          const newUnread = res.data.unreadCount || 0;
+          
+          if (newUnread > this.unreadCount && list.length > 0) {
+            const latest = list[0];
+            if (latest.title === 'Fine Payment Received' || latest.message.includes('Fine')) {
+              this.showToast(latest.message);
+            }
+          }
+          
+          this.notifications = list;
+          this.unreadCount = newUnread;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  showToast(msg: string) {
+    this.toastMessage = msg;
+    setTimeout(() => {
+      this.toastMessage = '';
+    }, 5000);
+  }
 
   isLoggedIn(): boolean {
     const token = localStorage.getItem('slms_token');
@@ -165,6 +250,7 @@ export class AppComponent {
   }
 
   logout() {
+    if (this.pollTimer) clearInterval(this.pollTimer);
     this.isMobileMenuOpen = false;
     localStorage.removeItem('slms_token');
     localStorage.removeItem('slms_user');

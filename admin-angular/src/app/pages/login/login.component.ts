@@ -108,7 +108,11 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Invalid admin credentials.';
+        if (err.status === 0) {
+          this.errorMessage = 'Cannot connect to backend server. Please ensure backend is running on http://localhost:5000.';
+        } else {
+          this.errorMessage = err.error?.message || 'Invalid email or password.';
+        }
       }
     });
   }

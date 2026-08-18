@@ -9,9 +9,13 @@ import { Router } from '@angular/router';
 })
 export class AdminApiService {
   private getBaseUrl(): string {
+    if ((window as any).NG_APP_API_URL) return (window as any).NG_APP_API_URL;
     if ((window as any).VITE_API_URL) return (window as any).VITE_API_URL;
     if ((window as any).API_URL) return (window as any).API_URL;
     if (typeof window !== 'undefined') {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api/v1';
+      }
       return `${window.location.origin}/api/v1`;
     }
     return 'http://localhost:5000/api/v1';

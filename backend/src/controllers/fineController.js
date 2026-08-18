@@ -56,6 +56,11 @@ const updateFineStatus = async (req, res, next) => {
 
     if (!fine) return ApiResponse.error(res, 'Fine record not found', 404);
 
+    const isServerAdmin = req.user.role === 'super_admin' || req.user.role === 'librarian';
+    if (!isServerAdmin && fine.user && fine.user._id.toString() !== req.user.id.toString()) {
+      return ApiResponse.error(res, 'You are not authorized to settle this fine record', 403);
+    }
+
     const prevStatus = fine.status;
     fine.status = status || fine.status;
     fine.paymentMethod = paymentMethod || fine.paymentMethod;

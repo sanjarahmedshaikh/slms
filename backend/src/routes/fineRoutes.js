@@ -8,6 +8,6 @@ router.use(protect);
 
 router.get('/my-fines', getMyFines);
 router.get('/', restrictTo('super_admin', 'librarian'), getAllFines);
-router.patch('/:id/pay', restrictTo('super_admin', 'librarian'), updateFineStatus);
+router.patch('/:id/pay', updateFineStatus);
 
 module.exports = router;

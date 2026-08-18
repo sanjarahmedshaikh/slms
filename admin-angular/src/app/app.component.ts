@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AdminApiService } from './services/admin-api.service';
@@ -28,7 +28,7 @@ import { AdminApiService } from './services/admin-api.service';
 
         <div class="flex items-center gap-3 text-xs">
           <!-- Real-time Admin Notification Bell -->
-          <div class="relative">
+          <div class="relative notif-dropdown-wrapper">
             <button (click)="toggleNotifications()" class="relative p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 border border-slate-700 transition-colors">
               <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
               <span *ngIf="unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center animate-pulse">
@@ -198,7 +198,17 @@ export class AppComponent implements OnInit {
   toastMessage = '';
   private pollTimer: any;
 
-  constructor(private router: Router, private api: AdminApiService) {}
+  constructor(private router: Router, private api: AdminApiService, private eRef: ElementRef) {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.isNotifOpen) {
+      const wrapper = this.eRef.nativeElement.querySelector('.notif-dropdown-wrapper');
+      if (wrapper && !wrapper.contains(event.target as Node)) {
+        this.isNotifOpen = false;
+      }
+    }
+  }
 
   ngOnInit() {
     if (this.isLoggedIn()) {

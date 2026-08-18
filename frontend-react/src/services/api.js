@@ -7,12 +7,9 @@ const getBaseUrl = () => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:5000/api/v1';
     }
-    if (window.location.hostname.includes('vercel.app')) {
-      return 'https://slms-backend.onrender.com/api/v1';
-    }
-    return `${window.location.origin}/api/v1`;
+    return 'https://slms-backend-up5s.onrender.com/api/v1';
   }
-  return 'http://localhost:5000/api/v1';
+  return 'https://slms-backend-up5s.onrender.com/api/v1';
 };
 
 const API_BASE_URL = getBaseUrl();
@@ -39,7 +36,7 @@ api.interceptors.request.use((config) => {
         }
         return Promise.reject(new Error('Session expired. Please log in again.'));
       }
-    } catch (e) {}
+    } catch (e) { }
 
     config.headers.Authorization = `Bearer ${token}`;
   }

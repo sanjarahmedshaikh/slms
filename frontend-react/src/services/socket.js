@@ -10,9 +10,12 @@ export const getSocketServerUrl = () => {
     return window.VITE_API_URL.replace(/\/api(?:\/v1)?\/?$/, '');
   }
   if (typeof window !== 'undefined') {
-    return window.location.origin;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:5000';
+    }
+    return 'https://slms-backend-up5s.onrender.com';
   }
-  return 'http://localhost:5000';
+  return 'https://slms-backend-up5s.onrender.com';
 };
 
 export const initializeSocket = (userId) => {

@@ -16,9 +16,9 @@ export class AdminApiService {
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:5000/api/v1';
       }
-      return (window as any).NG_APP_API_URL || (window as any).VITE_API_URL || 'https://slms-backend.onrender.com/api/v1';
+      return (window as any).NG_APP_API_URL || (window as any).VITE_API_URL || 'https://slms-backend-up5s.onrender.com/api/v1';
     }
-    return 'http://localhost:5000/api/v1';
+    return 'https://slms-backend-up5s.onrender.com/api/v1';
   }
 
   private baseUrl = this.getBaseUrl();

@@ -106,6 +106,11 @@ const cancelReservation = async (req, res, next) => {
     const reservation = await Reservation.findById(req.params.id);
     if (!reservation) return ApiResponse.error(res, 'Reservation not found', 404);
 
+    const isServerAdmin = req.user && (req.user.role === 'super_admin' || req.user.role === 'librarian');
+    if (!isServerAdmin && reservation.user.toString() !== req.user.id.toString()) {
+      return ApiResponse.error(res, 'You are not authorized to cancel this reservation', 403);
+    }
+
     reservation.status = 'cancelled';
     await reservation.save();
 

@@ -1,20 +1,22 @@
 const User = require('../models/User');
 const ApiResponse = require('../utils/apiResponse');
 const AuditLog = require('../models/AuditLog');
+const escapeRegExp = require('../utils/escapeRegExp');
 
 const getAllUsers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
-    const search = req.query.search || '';
-    const role = req.query.role || '';
+    const rawSearch = typeof req.query.search === 'string' ? req.query.search : '';
+    const role = typeof req.query.role === 'string' ? req.query.role : '';
 
     const query = {};
-    if (search) {
+    if (rawSearch.trim()) {
+      const escaped = escapeRegExp(rawSearch.trim());
       query.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { memberId: { $regex: search, $options: 'i' } }
+        { fullName: { $regex: escaped, $options: 'i' } },
+        { email: { $regex: escaped, $options: 'i' } },
+        { memberId: { $regex: escaped, $options: 'i' } }
       ];
     }
     if (role) {

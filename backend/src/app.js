@@ -23,7 +23,13 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const app = express();
 
 // Security Headers
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+  })
+);
 app.use(compression());
 
 // Parse dynamic CORS origins
@@ -47,7 +53,11 @@ app.use(
       if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
         callback(null, true);
       } else {
-        callback(null, true);
+        if (process.env.NODE_ENV !== 'production') {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'), false);
+        }
       }
     },
     credentials: true,
@@ -56,13 +66,23 @@ app.use(
   })
 );
 
-// Rate Limiting
+// Global API Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api', limiter);
+
+// Strict Rate Limiting for Authentication Endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: 'Too many authentication attempts from this IP, please try again after 15 minutes'
+});
+app.use('/api/v1/auth', authLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/auth', authLimiter);
 
 // Request Parsing & Logging
 app.use(express.json({ limit: '10mb' }));

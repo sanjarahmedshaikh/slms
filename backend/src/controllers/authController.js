@@ -20,14 +20,18 @@ const register = async (req, res, next) => {
       return ApiResponse.error(res, 'User with this email already exists', 400);
     }
 
-    const rolePrefix = role === 'faculty' ? 'FAC' : role === 'librarian' ? 'LIB' : 'STU';
+    // Security Hardening: Force self-registration role to student/faculty. Super admin & librarian are assigned by Super Admin only.
+    const allowedSelfRoles = ['student', 'faculty'];
+    const assignedRole = allowedSelfRoles.includes(role) ? role : 'student';
+
+    const rolePrefix = assignedRole === 'faculty' ? 'FAC' : 'STU';
     const memberId = `${rolePrefix}-${Date.now().toString().slice(-6)}`;
 
     const user = await User.create({
       fullName,
       email: cleanEmail,
       password,
-      role: role || 'student',
+      role: assignedRole,
       department: department || 'Computer Science',
       phone: phone || '',
       memberId
@@ -98,9 +102,12 @@ const getMe = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email });
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const genericMsg = 'If an account exists with that email address, password reset instructions have been processed.';
+
+    const user = await User.findOne({ email: cleanEmail });
     if (!user) {
-      return ApiResponse.error(res, 'There is no user registered with that email address.', 404);
+      return ApiResponse.success(res, null, genericMsg);
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -115,11 +122,9 @@ const forgotPassword = async (req, res, next) => {
       details: { email: user.email }
     });
 
-    return ApiResponse.success(
-      res,
-      { resetToken },
-      'Password reset token generated successfully. Use this token to reset your password.'
-    );
+    const responsePayload = process.env.NODE_ENV === 'development' ? { resetToken } : null;
+
+    return ApiResponse.success(res, responsePayload, genericMsg);
   } catch (error) {
     next(error);
   }
@@ -127,24 +132,21 @@ const forgotPassword = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
-    const { email, resetToken, newPassword } = req.body;
+    const { resetToken, newPassword } = req.body;
 
     if (!newPassword || newPassword.length < 6) {
       return ApiResponse.error(res, 'Password must be at least 6 characters long.', 400);
     }
 
-    let user = null;
-    if (resetToken) {
-      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-      user = await User.findOne({
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: { $gt: Date.now() }
-      });
+    if (!resetToken) {
+      return ApiResponse.error(res, 'Invalid or expired password reset token.', 400);
     }
 
-    if (!user && email) {
-      user = await User.findOne({ email });
-    }
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
 
     if (!user) {
       return ApiResponse.error(res, 'Invalid or expired password reset token.', 400);

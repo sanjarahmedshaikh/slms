@@ -1,4 +1,5 @@
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const logger = require('./logger');
 
 let io = null;
@@ -10,7 +11,11 @@ const initSocket = (httpServer, allowedOrigins = []) => {
         if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
           callback(null, true);
         } else {
-          callback(null, true);
+          if (process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'), false);
+          }
         }
       },
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
@@ -19,11 +24,32 @@ const initSocket = (httpServer, allowedOrigins = []) => {
     transports: ['websocket', 'polling']
   });
 
+  // Socket connection handshake authentication
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+    if (token && typeof token === 'string') {
+      try {
+        const cleanToken = token.replace(/^Bearer\s+/i, '').trim();
+        const secret = (process.env.JWT_SECRET || 'slms_dev_secure_jwt_secret_key_change_for_production_2026').trim();
+        const decoded = jwt.verify(cleanToken, secret);
+        socket.user = decoded;
+      } catch (err) {
+        // Proceed but socket remains unauthenticated
+      }
+    }
+    next();
+  });
+
   io.on('connection', (socket) => {
     logger.info(`Socket client connected: ${socket.id}`);
 
     socket.on('join_user_room', (userId) => {
       if (userId) {
+        // Restrict room joining to the authenticated user or admins
+        if (socket.user && socket.user.id !== userId && socket.user.role !== 'super_admin' && socket.user.role !== 'librarian') {
+          logger.warn(`Socket ${socket.id} unauthorized join attempt for user_${userId}`);
+          return;
+        }
         socket.join(`user_${userId}`);
         logger.info(`Socket ${socket.id} joined room user_${userId}`);
       }

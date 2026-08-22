@@ -53,6 +53,14 @@ const getMyFines = async (req, res, next) => {
 const updateFineStatus = async (req, res, next) => {
   try {
     const { status, paymentMethod, transactionReference, amount } = req.body;
+    const isServerAdmin = req.user && (req.user.role === 'super_admin' || req.user.role === 'librarian');
+
+    // Security Check: Waiving fines is strictly reserved for Super Admin and Librarian
+    if (status === 'waived' && !isServerAdmin) {
+      return ApiResponse.error(res, 'Access denied. Waiving fines requires librarian or admin privileges.', 403);
+    }
+
+    const targetStatus = isServerAdmin ? (status || 'paid') : 'paid';
     let fine = null;
 
     if (mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -64,21 +72,20 @@ const updateFineStatus = async (req, res, next) => {
       fine = await Fine.create({
         user: req.user.id,
         amount: amount || 5.0,
-        status: status || 'paid',
+        status: targetStatus,
         paymentMethod: paymentMethod || 'online',
         paidAt: new Date()
       });
       fine = await Fine.findById(fine._id).populate('user', 'fullName email memberId');
     } else {
-      const isServerAdmin = req.user.role === 'super_admin' || req.user.role === 'librarian';
       if (!isServerAdmin && fine.user && fine.user._id.toString() !== req.user.id.toString()) {
         return ApiResponse.error(res, 'You are not authorized to settle this fine record', 403);
       }
 
-      fine.status = status || fine.status;
+      fine.status = targetStatus;
       fine.paymentMethod = paymentMethod || fine.paymentMethod;
       if (transactionReference) fine.transactionReference = transactionReference;
-      if (status === 'paid' || status === 'waived') {
+      if (targetStatus === 'paid' || targetStatus === 'waived') {
         fine.paidAt = new Date();
       }
       await fine.save();

@@ -12,15 +12,6 @@ A complete, production-ready, enterprise-grade **Smart Library Management System
 
 ---
 
-## 📸 Screenshots & Interfaces
-
-| React Student & Faculty Portal | Angular Admin Dashboard |
-|:---:|:---:|
-| ![React Portal](https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=800) | ![Angular Admin](https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800) |
-| *Book Catalog, My Loans, Reservations & Fines* | *System Metrics, ApexCharts Analytics, Book Desk, Audit Logs* |
-
----
-
 ## 🏗️ System Architecture
 
 ```text
